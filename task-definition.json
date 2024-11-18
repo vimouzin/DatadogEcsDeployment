@@ -1,0 +1,208 @@
+{
+    "taskDefinitionArn": "arn:aws:ecs:us-east-1:533267035244:task-definition/datadog-example:13",
+    "containerDefinitions": [
+        {
+            "name": "cws-instrumentation-init",
+            "image": "datadog/cws-instrumentation:latest",
+            "cpu": 0,
+            "portMappings": [],
+            "essential": false,
+            "command": [
+                "/cws-instrumentation",
+                "setup",
+                "--cws-volume-mount",
+                "/cws-instrumentation-volume"
+            ],
+            "environment": [],
+            "mountPoints": [
+                {
+                    "sourceVolume": "cws-instrumentation-volume",
+                    "containerPath": "/cws-instrumentation-volume",
+                    "readOnly": false
+                }
+            ],
+            "volumesFrom": [],
+            "user": "0",
+            "systemControls": []
+        },
+        {
+            "name": "datadog-agent",
+            "image": "datadog/agent:latest",
+            "cpu": 0,
+            "portMappings": [],
+            "essential": true,
+            "environment": [
+                {
+                    "name": "DD_API_KEY",
+                    "value": "put your key here!"
+                },
+                {
+                    "name": "DD_SITE",
+                    "value": "datadoghq.com"
+                },
+                {
+                    "name": "DD_RUNTIME_SECURITY_CONFIG_ENABLED",
+                    "value": "true"
+                },
+                {
+                    "name": "ECS_FARGATE",
+                    "value": "true"
+                },
+                {
+                    "name": "DD_LOGS_ENABLED",
+                    "value": "true"
+                },
+                {
+                    "name": "DD_LOGS_CONFIG_CONTAINER_COLLECT_ALL",
+                    "value": "true"
+                },
+                {
+                    "name": "DD_RUNTIME_SECURITY_CONFIG_EBPFLESS_ENABLED",
+                    "value": "true"
+                }
+            ],
+            "mountPoints": [],
+            "volumesFrom": [],
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/datadog-example",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "datadog-agent"
+                }
+            },
+            "healthCheck": {
+                "command": [
+                    "CMD-SHELL",
+                    "/probe.sh"
+                ],
+                "interval": 30,
+                "timeout": 5,
+                "retries": 2,
+                "startPeriod": 60
+            },
+            "systemControls": []
+        },
+        {
+            "name": "datadog-node-app",
+            "image": "533267035244.dkr.ecr.us-east-1.amazonaws.com/demo/awsecs:latest",
+            "cpu": 0,
+            "portMappings": [],
+            "essential": true,
+            "entryPoint": [
+                "/cws-instrumentation-volume/cws-instrumentation",
+                "trace",
+                "--",
+                "node",
+                "app.js"
+            ],
+            "environment": [],
+            "mountPoints": [
+                {
+                    "sourceVolume": "cws-instrumentation-volume",
+                    "containerPath": "/cws-instrumentation-volume",
+                    "readOnly": true
+                }
+            ],
+            "volumesFrom": [],
+            "linuxParameters": {
+                "capabilities": {
+                    "add": [
+                        "SYS_PTRACE"
+                    ],
+                    "drop": []
+                }
+            },
+            "dependsOn": [
+                {
+                    "containerName": "datadog-agent",
+                    "condition": "HEALTHY"
+                },
+                {
+                    "containerName": "cws-instrumentation-init",
+                    "condition": "SUCCESS"
+                }
+            ],
+            "dockerLabels": {
+                "com.datadoghq.tags.service": "datadog-node-app",
+                "com.datadoghq.tags.version": "1.0.0",
+                "com.datadoghq.tags.env": "development"
+            },
+            "logConfiguration": {
+                "logDriver": "awslogs",
+                "options": {
+                    "awslogs-group": "/ecs/datadog-example",
+                    "awslogs-region": "us-east-1",
+                    "awslogs-stream-prefix": "datadog-node-app"
+                }
+            },
+            "systemControls": []
+        }
+    ],
+    "family": "datadog-example",
+    "executionRoleArn": "arn:aws:iam::533267035244:role/ecsTaskExecutionRole",
+    "networkMode": "awsvpc",
+    "revision": 13,
+    "volumes": [
+        {
+            "name": "cws-instrumentation-volume",
+            "host": {}
+        }
+    ],
+    "status": "ACTIVE",
+    "requiresAttributes": [
+        {
+            "name": "ecs.capability.execution-role-awslogs"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.ecr-auth"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.17"
+        },
+        {
+            "name": "ecs.capability.container-health-check"
+        },
+        {
+            "name": "ecs.capability.execution-role-ecr-pull"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.18"
+        },
+        {
+            "name": "ecs.capability.task-eni"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.29"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.logging-driver.awslogs"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.24"
+        },
+        {
+            "name": "com.amazonaws.ecs.capability.docker-remote-api.1.19"
+        },
+        {
+            "name": "ecs.capability.pid-ipc-namespace-sharing"
+        },
+        {
+            "name": "ecs.capability.container-ordering"
+        }
+    ],
+    "placementConstraints": [],
+    "compatibilities": [
+        "EC2",
+        "FARGATE"
+    ],
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "cpu": "256",
+    "memory": "512",
+    "pidMode": "task",
+    "registeredAt": "2024-11-18T00:57:55.494Z",
+    "registeredBy": "arn:aws:iam::533267035244:root",
+    "tags": []
+}

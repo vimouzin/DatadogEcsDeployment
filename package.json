@@ -1,0 +1,15 @@
+{
+    "name": "datadog-node-app",
+    "version": "1.0.0",
+    "description": "A Node.js application with Datadog logging and tracing",
+    "main": "app.js",
+    "scripts": {
+        "start": "node -r dd-trace/init app.js"
+    },
+    "dependencies": {
+        "dd-trace": "1.0.0",
+        "express": "^4.18.0",
+        "log4js": "^6.9.1",
+        "winston": "^3.8.0"
+    }
+}
