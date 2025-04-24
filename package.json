@@ -4,7 +4,7 @@
     "description": "A Node.js application with Datadog logging and tracing",
     "main": "app.js",
     "scripts": {
-        "start": "node -r dd-trace/init app.js"
+        "start": "node app.js"
     },
     "dependencies": {
         "dd-trace": "1.0.0",
